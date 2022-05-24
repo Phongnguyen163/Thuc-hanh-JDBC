@@ -20,6 +20,8 @@ public class UserDAO implements IUserDAO{
     private static final String SELECT_ALL_USERS = "select * from users";
     private static final String DELETE_USERS_SQL = "delete from users where id = ?;";
     private static final String UPDATE_USERS_SQL = "update users set name = ?,email= ?, country =? where id = ?;";
+    private static final String Search_User_By_Country = "select*from users where country=?";
+    private static final String Sort_By_Name = "select * from users order by name";
 
     public UserDAO() {
     }
@@ -126,6 +128,49 @@ public class UserDAO implements IUserDAO{
         return rowUpdated;
     }
 
+    @Override
+    public List<User> searchUserByCountry(String country) {
+        List<User> listSearch = new ArrayList<>();
+        try {
+            Connection connection = getConnection();
+            PreparedStatement pstm = connection.prepareStatement(Search_User_By_Country);
+            pstm.setString(1, country);
+            ResultSet resultSet = pstm.executeQuery();
+
+            while (resultSet.next()) {
+                int id = resultSet.getInt("id");
+                String name = resultSet.getString("name");
+                String email = resultSet.getString("email");
+                listSearch.add(new User(id, name, email, country));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return listSearch;
+    }
+
+    @Override
+    public List<User> sortByName() {
+        List<User> userList = new ArrayList<>();
+        try {
+            Connection connection = getConnection();
+            PreparedStatement pstm = connection.prepareStatement(Sort_By_Name);
+            ResultSet resultSet = pstm.executeQuery();
+
+            while (resultSet.next()) {
+                int id = resultSet.getInt("id");
+                String name = resultSet.getString("userName");
+                String email = resultSet.getString("email");
+                String country = resultSet.getString("country");
+                userList.add(new User(id, name, email, country));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return userList;
+    }
+
     private void printSQLException(SQLException ex) {
         for (Throwable e : ex) {
             if (e instanceof SQLException) {
@@ -141,4 +186,6 @@ public class UserDAO implements IUserDAO{
             }
         }
     }
+
+
 }
